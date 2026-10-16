@@ -1,0 +1,555 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #faf9f4;
+    --surface: #ffffff;
+    --ink: #24324a;
+    --ink-soft: #5b6b85;
+    --line: #dcdad0;
+    --line-soft: #e9e7dd;
+    --blue: #2f5296;
+    --blue-deep: #1f3a70;
+    --blue-wash: #eaf0fb;
+    --green: #2f7a5c;
+    --green-wash: #e7f3ec;
+    --amber: #b5762c;
+    --amber-wash: #faf0e2;
+    --red: #b23a3a;
+    --shadow: 0 1px 2px rgba(36,50,74,0.06), 0 6px 20px rgba(36,50,74,0.05);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    min-height:100vh;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+  }
+
+  body{
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px);
+    background-size: 100% 42px;
+    background-attachment: local;
+  }
+
+  .wrap{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap: 16px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .date-stamp{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    padding: 5px 10px;
+    border-radius: 6px;
+  }
+
+  h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 42px;
+    letter-spacing: -0.01em;
+    margin: 0 0 4px;
+    color: var(--blue-deep);
+  }
+
+  .subtitle{
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    margin: 0 0 32px;
+  }
+
+  /* Input row */
+  .add-row{
+    display:flex;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .add-row input[type="text"]{
+    flex:1;
+    font-family:'Inter', sans-serif;
+    font-size: 15px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow);
+    outline: none;
+    transition: border-color .15s ease;
+  }
+  .add-row input[type="text"]::placeholder{ color: #9aa4b8; }
+  .add-row input[type="text"]:focus{ border-color: var(--blue); }
+
+  .btn-add{
+    font-family:'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14.5px;
+    padding: 0 26px;
+    border: none;
+    border-radius: 10px;
+    background: var(--blue-deep);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform .1s ease, background .15s ease;
+    white-space: nowrap;
+  }
+  .btn-add:hover{ background: var(--blue); }
+  .btn-add:active{ transform: translateY(1px); }
+
+  /* Stats */
+  .stats{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+  }
+
+  .stat-num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-card.total .stat-num{ color: var(--blue-deep); }
+  .stat-card.done .stat-num{ color: var(--green); }
+  .stat-card.pending .stat-num{ color: var(--amber); }
+
+  .stat-label{
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Filters */
+  .filters{
+    display:flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .filter-btn{
+    font-family:'Inter', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .filter-btn:hover{ border-color: var(--blue); color: var(--blue-deep); }
+  .filter-btn.active{
+    background: var(--blue-deep);
+    border-color: var(--blue-deep);
+    color: #fff;
+  }
+
+  /* Task log */
+  .log{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .log-head{
+    display:grid;
+    grid-template-columns: 32px 1fr 110px 120px 40px;
+    gap: 10px;
+    align-items:center;
+    padding: 12px 18px;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    background: var(--blue-wash);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .task-item{
+    display:grid;
+    grid-template-columns: 32px 1fr 110px 120px 40px;
+    gap: 10px;
+    align-items:center;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line-soft);
+    transition: background .15s ease;
+  }
+  .task-item:last-child{ border-bottom: none; }
+  .task-item:hover{ background: #fafbfd; }
+
+  .task-num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: #b7bfcf;
+  }
+
+  .checkbox{
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid var(--line);
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+    background: var(--paper);
+    flex-shrink: 0;
+    transition: all .15s ease;
+    justify-self: start;
+  }
+  .checkbox.checked{
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .checkbox.checked::after{
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(40deg);
+  }
+
+  .task-text{
+    font-size: 15px;
+    color: var(--ink);
+    word-break: break-word;
+  }
+  .task-text.done{
+    color: #9aa4b8;
+    text-decoration: line-through;
+  }
+
+  .status-pill{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-align: center;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  .status-pill.done{ background: var(--green-wash); color: var(--green); }
+  .status-pill.pending{ background: var(--amber-wash); color: var(--amber); }
+
+  .task-date{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  .delete-btn{
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: #c7cedb;
+    cursor: pointer;
+    border-radius: 6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: all .15s ease;
+    justify-self: end;
+  }
+  .delete-btn:hover{ background: #fbeaea; color: var(--red); }
+
+  .empty-state{
+    padding: 56px 24px;
+    text-align: center;
+    color: var(--ink-soft);
+  }
+  .empty-state .glyph{
+    font-family:'Fraunces', serif;
+    font-size: 32px;
+    color: var(--line);
+    margin-bottom: 8px;
+  }
+  .empty-state p{ margin: 0; font-size: 14px; }
+
+  footer{
+    margin-top: 24px;
+    text-align:center;
+    font-size: 12px;
+    color: #b7bfcf;
+  }
+
+  @media (max-width: 640px){
+    h1{ font-size: 32px; }
+    .stats{ grid-template-columns: 1fr; }
+    .log-head, .task-item{
+      grid-template-columns: 24px 1fr 80px 34px;
+    }
+    .log-head span:nth-child(4), .task-date{ display:none; }
+    .add-row{ flex-direction: column; }
+    .btn-add{ padding: 14px; }
+  }
+
+  :focus-visible{ outline: 2px solid var(--blue); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <h1>Task Manager</h1>
+      <p class="subtitle">Keep today's list honest — add it, work it, check it off.</p>
+    </div>
+    <div class="date-stamp" id="dateStamp"></div>
+  </div>
+
+  <div class="add-row">
+    <input type="text" id="taskInput" placeholder="Enter your task" maxlength="140" autocomplete="off">
+    <button class="btn-add" id="addBtn">Add Task</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card total">
+      <div class="stat-num" id="statTotal">0</div>
+      <div class="stat-label">Total Task</div>
+    </div>
+    <div class="stat-card done">
+      <div class="stat-num" id="statDone">0</div>
+      <div class="stat-label">Completed</div>
+    </div>
+    <div class="stat-card pending">
+      <div class="stat-num" id="statPending">0</div>
+      <div class="stat-label">Pending</div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="pending">Pending</button>
+    <button class="filter-btn" data-filter="completed">Completed</button>
+  </div>
+
+  <div class="log">
+    <div class="log-head">
+      <span></span>
+      <span>Task</span>
+      <span>Status</span>
+      <span>Date</span>
+      <span></span>
+    </div>
+    <div id="taskList"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="glyph">—</div>
+      <p id="emptyText">No tasks yet. Add your first one above.</p>
+    </div>
+  </div>
+
+  <footer>Saved automatically to this browser</footer>
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'task_manager_tasks_v1';
+  let tasks = [];
+  let currentFilter = 'all';
+
+  const taskInput = document.getElementById('taskInput');
+  const addBtn = document.getElementById('addBtn');
+  const taskListEl = document.getElementById('taskList');
+  const emptyState = document.getElementById('emptyState');
+  const emptyText = document.getElementById('emptyText');
+  const statTotal = document.getElementById('statTotal');
+  const statDone = document.getElementById('statDone');
+  const statPending = document.getElementById('statPending');
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const dateStamp = document.getElementById('dateStamp');
+
+  function formatDate(d){
+    const day = String(d.getDate()).padStart(2,'0');
+    const month = String(d.getMonth()+1).padStart(2,'0');
+    return `${day}/${month}/${d.getFullYear()}`;
+  }
+
+  dateStamp.textContent = formatDate(new Date());
+
+  function loadTasks(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      tasks = raw ? JSON.parse(raw) : [];
+    }catch(e){
+      tasks = [];
+    }
+  }
+
+  function saveTasks(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }catch(e){ /* storage unavailable, continue in-memory */ }
+  }
+
+  function addTask(text){
+    const trimmed = text.trim();
+    if(!trimmed) return;
+    tasks.unshift({
+      id: Date.now() + Math.random().toString(16).slice(2),
+      text: trimmed,
+      completed: false,
+      createdDate: formatDate(new Date()),
+      completedDate: null
+    });
+    saveTasks();
+    render();
+  }
+
+  function toggleTask(id){
+    const t = tasks.find(t => t.id === id);
+    if(!t) return;
+    t.completed = !t.completed;
+    t.completedDate = t.completed ? formatDate(new Date()) : null;
+    saveTasks();
+    render();
+  }
+
+  function deleteTask(id){
+    tasks = tasks.filter(t => t.id !== id);
+    saveTasks();
+    render();
+  }
+
+  function getFiltered(){
+    if(currentFilter === 'pending') return tasks.filter(t => !t.completed);
+    if(currentFilter === 'completed') return tasks.filter(t => t.completed);
+    return tasks;
+  }
+
+  function render(){
+    const total = tasks.length;
+    const done = tasks.filter(t => t.completed).length;
+    const pending = total - done;
+
+    statTotal.textContent = total;
+    statDone.textContent = done;
+    statPending.textContent = pending;
+
+    const filtered = getFiltered();
+    taskListEl.innerHTML = '';
+
+    if(filtered.length === 0){
+      emptyState.style.display = 'block';
+      emptyText.textContent = total === 0
+        ? 'No tasks yet. Add your first one above.'
+        : `No ${currentFilter} tasks.`;
+      return;
+    }
+    emptyState.style.display = 'none';
+
+    filtered.forEach((t, i) => {
+      const row = document.createElement('div');
+      row.className = 'task-item';
+      row.innerHTML = `
+        <span class="task-num">${i+1}.</span>
+        <span class="task-text ${t.completed ? 'done' : ''}">${escapeHtml(t.text)}</span>
+        <span class="status-pill ${t.completed ? 'done' : 'pending'}">${t.completed ? 'Completed' : 'Pending'}</span>
+        <span class="task-date">${t.completed ? (t.completedDate || '') : (t.createdDate || '')}</span>
+        <button class="delete-btn" title="Delete task" aria-label="Delete task">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </button>
+      `;
+      const checkbox = document.createElement('div');
+      checkbox.className = 'checkbox' + (t.completed ? ' checked' : '');
+      checkbox.setAttribute('role','checkbox');
+      checkbox.setAttribute('aria-checked', t.completed);
+      checkbox.tabIndex = 0;
+      row.insertBefore(checkbox, row.firstChild);
+
+      checkbox.addEventListener('click', () => toggleTask(t.id));
+      checkbox.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleTask(t.id); }
+      });
+      row.querySelector('.delete-btn').addEventListener('click', () => deleteTask(t.id));
+
+      taskListEl.appendChild(row);
+    });
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  addBtn.addEventListener('click', () => {
+    addTask(taskInput.value);
+    taskInput.value = '';
+    taskInput.focus();
+  });
+
+  taskInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){
+      addTask(taskInput.value);
+      taskInput.value = '';
+    }
+  });
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      render();
+    });
+  });
+
+  loadTasks();
+  render();
+})();
+</script>
+
+</body>
+</html>
